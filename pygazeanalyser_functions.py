@@ -12,7 +12,6 @@ from gazeplotter import *
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-%matplotlib inline
 
 #csv import 
 import csv
@@ -103,9 +102,72 @@ def return_property_value(data_set,subject_id, game_nr,trial_nr,property_label):
     return property_value
 
 
+def draw_heatmap_saccade(data,partic_id,game_nr,trial_nr):
+
+	"""
+	Draws saccadic path ON TOP OF heatmaps and saves it in the current folder for a given data 
+
+	@Input:
+		data: dataset loaded as per read_data()
+	 	trial_nr: trial number
+
+	Returns:
+		None
+	
+	(Saves the heatmap in the current folder)
+	"""
+	#trial_nr = 12
+	#saccades and fixations
+	saccades = np.array(data[trial_nr]['events']['Esac'])
+	fixations = np.array(data[trial_nr]['events']['Efix'])
+	dispsize= (1919,1079) # (px,px) size of screen 
+
+	# draw saccadic scanpath and save fig
+	#saves as id+game_nr+trial_nr+current date time
+
+	savefilename = 'output_images/' + str(partic_id) + '_game_'+str(game_nr)+'_' \
+               + str(trial_nr) + '_'+ time.strftime("%Y%m%d-%H%M%S")
+	fig = draw_scanpath(fixations, saccades, dispsize, imagefile=None, alpha=0.5, savefilename=savefilename)
+
+	#draw heatmap on top of it
+	img_file = savefilename + '.png'
+	fig_heatmap = draw_heatmap(fixations, dispsize, imagefile=img_file)
+	img_heatmap_file = savefilename + '_heatmap'
+	fig_heatmap.savefig(img_heatmap_file)
+
+def draw_heatmap_trial(data,partic_id,game_nr,trial_nr):
+
+	"""
+	Draws heatmaps and saves it in the current folder for a given data 
+
+	@Input:
+		data: dataset loaded as per read_data()
+	 	trial_nr: trial number
+
+	Returns:
+		None
+	
+	(Saves the heatmap in the current folder)
+	"""
+	#trial_nr = 12
+	#saccades and fixations
+	fixations = np.array(data[trial_nr]['events']['Efix'])
+	dispsize= (1919,1079) # (px,px) size of screen 
+
+	# draw saccadic scanpath and save fig
+	#saves as id+game_nr+trial_nr+current date time
+
+	savefilename = 'output_images/' + str(partic_id) + '_game_'+str(game_nr)+'_' \
+               + str(trial_nr) + '_'+ time.strftime("%Y%m%d-%H%M%S")
+
+	#draw heatmap 
+	fig_heatmap = draw_heatmap(fixations, dispsize, imagefile=None)
+	img_heatmap_file = savefilename + '_heatmap'
+	fig_heatmap.savefig(img_heatmap_file)
+	
 
 
-def return_centroid_heatmap(image_load):
+def return_centroid_heatmap(image_file):
     """
     Finds circular contours in the image and returns the center and radius
     
@@ -116,6 +178,9 @@ def return_centroid_heatmap(image_load):
 	radius (r) : List of radii 
 	image_out : Image with (circular) contours marked
     """
+
+    #load image using open cv
+    image_load = cv2.imread(image_file,0)
     ## find number of blobs 
 
     #threshold
@@ -138,7 +203,7 @@ def return_centroid_heatmap(image_load):
             radius_list.append(radius)
             #cv2.drawContours(image_load,cnt,contourIdx=-1, color=(255, 255, 0), thickness=2,\
                          #lineType=cv2.LINE_AA)   
-    
+        
     return np.array(center_list),radius_list,image_load
 
 
@@ -173,39 +238,4 @@ def return_cross_pos(partic_id,game_nr,trial_nr):
 
     return x_mean, y_mean
 
-
-def draw_heatmap_trial(data,trial_nr):
-
-	"""
-	Draws saccadic path, heatmaps and saves it in the current folder for a given data 
-
-	@Input:
-		data: dataset loaded as per read_data()
-	 	trial_nr: trial number
-
-	Returns:
-		None
-	
-	(Saves the heatmap in the current folder)
-	"""
-	#trial_nr = 12
-	#saccades and fixations
-	saccades = np.array(data[trial_nr]['events']['Esac'])
-	fixations = np.array(data[trial_nr]['events']['Efix'])
-	dispsize= (1919,1079) # (px,px) size of screen 
-
-	# draw saccadic scanpath and save fig
-	#saves as id+game_nr+trial_nr+current date time
-
-	savefilename = 'output_images/' + str(partic_id) + '_game_'+str(game_nr)+'_' \
-               + str(trial_nr) + '_'+ time.strftime("%Y%m%d-%H%M%S")
-	fig = draw_scanpath(fixations, saccades, dispsize, imagefile=None, alpha=0.5, savefilename=savefilename)
-
-	#draw heatmap on top of it
-	img_file = savefilename + '.png'
-	fig_heatmap = draw_heatmap(fixations, dispsize, imagefile=img_file)
-	img_heatmap_file = savefilename + '_heatmap'
-	fig_heatmap.savefig(img_heatmap_file)
-
-	
 
