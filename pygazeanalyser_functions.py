@@ -269,3 +269,75 @@ def return_cross_pos(partic_id,game_nr,trial_nr):
         x_mean,y_mean = Efix[-2:]
 
     return x_mean, y_mean
+
+#### Functions for velocity calc
+
+## Function for position
+def dist_gaze(data,trial_nr):    
+    """
+    Returns list of x,y coordinates of gaze and time taken 
+    
+    @Input: 
+        data: data loaded as per read_data() fn
+        trial_nr : trial number
+        
+    Returns:
+        x_pos, y_pos : List of x, y coordinates
+    
+    """
+    #load fixations
+    fixations = np.array(data[trial_nr]['events']['Efix'])
+
+    # load x,y 
+    x_pos = fixations[:,3]
+    y_pos = fixations[:,4]
+
+    return x_pos, y_pos
+def time_gaze(data,trial_nr):
+    """
+    Calculates time between two fixations --> from endtime of fixation 1 to
+    starttime of fixation 2
+    
+    @Inputs:
+        data: data loaded as per read_data() fn
+        trial_nr : trial number
+    
+    Returns:
+        time_diff_list : list of time elapsed between two fixation points
+    
+    """
+    #load fixations
+    fixations = np.array(data[trial_nr]['events']['Efix'])
+    
+    start_time_arr     = fixations[1:,0] #start_time, skips first one 
+    end_time_arr       = fixations[:-1,1]  #end_time, skips last one
+    
+    time_diff_list = start_time_arr - end_time_arr
+    return time_diff_list
+
+
+## Function for velocity
+def velocity_gaze(data,trial_nr):
+    # load distances
+    x_pos, y_pos = dist_gaze(data,trial_nr)
+    
+    # x velocity (x_t+1 - x_t)
+    
+    # displacement
+    # [x2,x3....xn] - [x1,x2,...x(n-1)]
+    x_end_list = x_pos[1:]
+    x_start_list = x_pos[:-1]
+    y_end_list = y_pos[1:]
+    y_start_list = y_pos[:-1]
+    displacement_x = x_start_list - x_end_list
+    displacement_y = y_start_list - y_end_list
+    
+    # time
+    time_list = time_gaze(data,trial_nr)
+    
+    #velocity = displacement/time
+    vel_x      = displacement_x/time_list
+    vel_y      = displacement_y/time_list
+
+
+    return vel_x, vel_y
