@@ -283,14 +283,19 @@ def dist_gaze(data,trial_nr):
         
     Returns:
         x_pos, y_pos : List of x, y coordinates
-    
+        Note: Returns empty array if the fixation list is empty in a trial
+
     """
     #load fixations
     fixations = np.array(data[trial_nr]['events']['Efix'])
 
-    # load x,y 
-    x_pos = fixations[:,3]
-    y_pos = fixations[:,4]
+    # load x,y
+    if fixations.size != 0:
+        x_pos = fixations[:,3]
+        y_pos = fixations[:,4]
+    else:
+        x_pos = np.array([])
+        y_pos = np.array([])
 
     return x_pos, y_pos
 def time_gaze(data,trial_nr):
@@ -304,40 +309,123 @@ def time_gaze(data,trial_nr):
     
     Returns:
         time_diff_list : list of time elapsed between two fixation points
-    
+        Note: Returns empty array if the fixation list is empty in a trial
+
     """
     #load fixations
     fixations = np.array(data[trial_nr]['events']['Efix'])
     
-    start_time_arr     = fixations[1:,0] #start_time, skips first one 
-    end_time_arr       = fixations[:-1,1]  #end_time, skips last one
-    
-    time_diff_list = start_time_arr - end_time_arr
+    if fixations.size != 0:
+        start_time_arr     = fixations[1:,0] #start_time, skips first one 
+        end_time_arr       = fixations[:-1,1]  #end_time, skips last one
+        time_diff_list = start_time_arr - end_time_arr
+    else:
+        start_time_arr = np.array([])
+        end_time_arr   = np.array([])
+        
+        time_diff_list = np.array([])
     return time_diff_list
 
 
 ## Function for velocity
 def velocity_gaze(data,trial_nr):
+    
+    """
+    Calculates velocity of gaze given by 
+    velocity = displacement/time
+    
+    Note: Returns empty array if the fixation list is empty in a trial
+    
+    
+    
+    """
+    
     # load distances
     x_pos, y_pos = dist_gaze(data,trial_nr)
-    
-    # x velocity (x_t+1 - x_t)
-    
-    # displacement
-    # [x2,x3....xn] - [x1,x2,...x(n-1)]
-    x_end_list = x_pos[1:]
-    x_start_list = x_pos[:-1]
-    y_end_list = y_pos[1:]
-    y_start_list = y_pos[:-1]
-    displacement_x = x_start_list - x_end_list
-    displacement_y = y_start_list - y_end_list
-    
-    # time
-    time_list = time_gaze(data,trial_nr)
-    
-    #velocity = displacement/time
-    vel_x      = displacement_x/time_list
-    vel_y      = displacement_y/time_list
+    if x_pos.size!=0:
+        # x velocity (x_t+1 - x_t)
 
+        # displacement
+        # [x2,x3....xn] - [x1,x2,...x(n-1)]
+        x_end_list = x_pos[1:]
+        x_start_list = x_pos[:-1]
+        y_end_list = y_pos[1:]
+        y_start_list = y_pos[:-1]
+        displacement_x = x_start_list - x_end_list
+        displacement_y = y_start_list - y_end_list
 
+        # time
+        time_list = time_gaze(data,trial_nr)
+
+        #velocity = displacement/time
+        vel_x      = displacement_x/time_list
+        vel_y      = displacement_y/time_list
+
+    else:
+        vel_x = np.array([])
+        vel_y = np.array([])
     return vel_x, vel_y
+
+
+## speed vs Noise plot function
+def plot_speed_noise(participant_id, dataset_fname = 'dataset_0423.csv'):
+    
+    # Initialize the noise_sample_list
+    perc_noise_game_list =[]
+    trials = np.arange(1,17,1)
+    games  = np.arange(1,17,1)
+    prop_label = 'perc_noise_sample'
+    
+    #load the list
+    for game_nr in games:
+        perc_noise_trial_list = []
+        for trial_nr in trials:
+            perc_noise = return_property_value(data_properties, subject_id, game_nr, trial_nr,\
+                                               prop_label)
+            perc_noise_trial_list.append(perc_noise)
+        perc_noise_game_list.append(perc_noise_trial_list)
+        
+        
+    #load velocity values
+    velocity_game_list =[]
+    phase = 'stimulus'
+    trials = np.arange(0,16,1)
+    games  = np.arange(1,17,1)
+    trial_success = []
+    for game_nr in games:
+        velocity_trial_list = []
+        data = read_data(partic_id, game_nr,phase)
+        for trial_nr in trials:
+            velocity_x,velocity_y = velocity_gaze(data,trial_nr)
+            # mean velocity
+            if velocity_x.size!=0:
+                velocity_mean_x = np.mean(velocity_x)
+                velocity_mean_y = np.mean(velocity_y)
+
+            #append to trial list
+            velocity_trial_list.append([velocity_mean_x,velocity_mean_y])
+        velocity_game_list.append(velocity_trial_list)
+    velocity_game_list = np.array(velocity_game_list)    
+    
+    ## Plots
+
+    #speed vs noise (speed = v_x**2 + v_y**2)
+    for i,game_nr in enumerate(games):
+
+        #calculate speed
+        vel_x_game_mean, vel_y_game_mean = (velocity_game_list[i].mean(0))[0],\
+                                            (velocity_game_list[i].mean(0))[1]
+        speed = vel_x_game_mean**2 + vel_y_game_mean**2
+
+        # calculate average noise
+        perc_noise_mean = np.array(perc_noise_game_list[i]).mean()
+        if speed.size!=0:
+            plt.scatter(perc_noise_mean,speed)
+
+
+    #labels and titles
+    plt.xlabel('perceptual noise (mean per trial)')
+    plt.ylabel('Speed (pixels/unit time step)')
+    plt.title('Speed vs perceptual noise ')
+    fig_title = 'speed_vs_perc_noise_participant_' + str(partic_id) 
+    plt.savefig(fig_title)
