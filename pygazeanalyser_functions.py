@@ -368,14 +368,15 @@ def velocity_gaze(data,trial_nr):
 
 
 ## speed vs Noise plot function
-def plot_speed_noise(participant_id, dataset_fname = 'dataset_0423.csv'):
-    
+def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv'):
+    subject_id = int(partic_id[-2:]) # retrieve subject_id from the participant_id
     # Initialize the noise_sample_list
     perc_noise_game_list =[]
     trials = np.arange(1,17,1)
     games  = np.arange(1,17,1)
     prop_label = 'perc_noise_sample'
-    
+    data_properties =  load_dataset_properties(dataset_fname)
+
     #load the list
     for game_nr in games:
         perc_noise_trial_list = []
@@ -391,26 +392,32 @@ def plot_speed_noise(participant_id, dataset_fname = 'dataset_0423.csv'):
     phase = 'stimulus'
     trials = np.arange(0,16,1)
     games  = np.arange(1,17,1)
-    trial_success = []
+    game_success = []
     for game_nr in games:
+        counter_success = 0 # counter to track if velocity values are returned empty
         velocity_trial_list = []
         data = read_data(partic_id, game_nr,phase)
         for trial_nr in trials:
+
             velocity_x,velocity_y = velocity_gaze(data,trial_nr)
             # mean velocity
             if velocity_x.size!=0:
+                counter_success +=1
+
                 velocity_mean_x = np.mean(velocity_x)
                 velocity_mean_y = np.mean(velocity_y)
-
-            #append to trial list
-            velocity_trial_list.append([velocity_mean_x,velocity_mean_y])
-        velocity_game_list.append(velocity_trial_list)
+                #append to trial list
+                velocity_trial_list.append([velocity_mean_x,velocity_mean_y])
+                velocity_game_list.append(np.array(velocity_trial_list))
+                
+        if counter_success!=0:
+            game_success.append(game_nr)
+            #print(game_nr)
     velocity_game_list = np.array(velocity_game_list)    
-    
     ## Plots
 
     #speed vs noise (speed = v_x**2 + v_y**2)
-    for i,game_nr in enumerate(games):
+    for i,game_nr in enumerate(game_success):
 
         #calculate speed
         vel_x_game_mean, vel_y_game_mean = (velocity_game_list[i].mean(0))[0],\
@@ -426,6 +433,6 @@ def plot_speed_noise(participant_id, dataset_fname = 'dataset_0423.csv'):
     #labels and titles
     plt.xlabel('perceptual noise (mean per trial)')
     plt.ylabel('Speed (pixels/unit time step)')
-    plt.title('Speed vs perceptual noise ')
+    plt.title('Speed vs perceptual noise | Participant: ' + str(subject_id))
     fig_title = 'speed_vs_perc_noise_participant_' + str(partic_id) 
     plt.savefig(fig_title)
