@@ -368,7 +368,7 @@ def velocity_gaze(data,trial_nr):
 
 
 ## speed vs Noise plot function
-def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv'):
+def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean'):
     subject_id = int(partic_id[-2:]) # retrieve subject_id from the participant_id
     # Initialize the noise_sample_list
     perc_noise_game_list =[]
@@ -420,10 +420,15 @@ def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv'):
     for i,game_nr in enumerate(game_success):
 
         #calculate speed
-        vel_x_game_mean, vel_y_game_mean = (velocity_game_list[i].mean(0))[0],\
+        if mode == 'mean':
+            vel_x_game_mean, vel_y_game_mean = (velocity_game_list[i].mean(0))[0],\
                                             (velocity_game_list[i].mean(0))[1]
-        speed = vel_x_game_mean**2 + vel_y_game_mean**2
+        if mode == 'std':    
+            vel_x_game_mean, vel_y_game_mean = (velocity_game_list[i].std(0))[0],\
+                                            (velocity_game_list[i].std(0))[1]
 
+        speed = vel_x_game_mean**2 + vel_y_game_mean**2
+        
         # calculate average noise
         perc_noise_mean = np.array(perc_noise_game_list[i]).mean()
         if speed.size!=0:
