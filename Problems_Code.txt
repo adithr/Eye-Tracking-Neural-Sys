@@ -1,0 +1,5 @@
+Inattention calculator:
+	- only works for heatmap containing one circular gaussian
+		- so two gaussian modes overlapping is skipped
+		 - also possibly elliptical heatmaps are also skipped
+			- would have to check though
