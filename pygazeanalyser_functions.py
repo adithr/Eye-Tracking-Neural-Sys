@@ -368,7 +368,7 @@ def velocity_gaze(data,trial_nr):
 
 
 ## speed vs Noise plot function
-def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean'):
+def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean',fig=None,ax=None):
     subject_id = int(partic_id[-2:]) # retrieve subject_id from the participant_id
     # Initialize the noise_sample_list
     perc_noise_game_list =[]
@@ -415,7 +415,12 @@ def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean'):
             #print(game_nr)
     velocity_game_list = np.array(velocity_game_list)    
     ## Plots
-
+    
+    # define figure and axes
+    if fig is None:
+        fig = plt.figure()
+        ax  = fig.add_subplot()
+    
     #speed vs noise (speed = v_x**2 + v_y**2)
     for i,game_nr in enumerate(game_success):
 
@@ -432,12 +437,14 @@ def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean'):
         # calculate average noise
         perc_noise_mean = np.array(perc_noise_game_list[i]).mean()
         if speed.size!=0:
-            plt.scatter(perc_noise_mean,speed)
+            ax.scatter(perc_noise_mean,speed)
 
 
     #labels and titles
-    plt.xlabel('perceptual noise (mean per trial)')
-    plt.ylabel('Speed (pixels/unit time step)')
-    plt.title('Speed vs perceptual noise | Participant: ' + str(subject_id))
+    ax.set_xlabel('perceptual noise (mean per trial)')
+    ax.set_ylabel('Speed (pixels/unit time step)')
+    ax.set_title('Speed vs perceptual noise | Participant: ' + str(subject_id))
     fig_title = 'speed_vs_perc_noise_participant_' + str(partic_id) 
-    plt.savefig(fig_title)
+    #plt.savefig(fig_title)
+    
+    return fig,ax
