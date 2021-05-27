@@ -448,3 +448,87 @@ def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean',f
     #plt.savefig(fig_title)
     
     return fig,ax
+
+
+### Saccadic dist vs noise plot
+def plot_dist_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean',fig=None,ax=None):
+    
+    subject_id = int(partic_id[-2:]) # retrieve subject_id from the participant_id
+    
+    # Initialize the noise_sample_list
+    perc_noise_game_list =[]
+    trials = np.arange(1,17,1)
+    games  = np.arange(1,17,1)
+    prop_label = 'perc_noise_sample'
+    data_properties =  load_dataset_properties(dataset_fname)
+
+    #load the list
+    for game_nr in games:
+        perc_noise_trial_list = []
+        for trial_nr in trials:
+            perc_noise = return_property_value(data_properties, subject_id, game_nr, trial_nr,\
+                                               prop_label)
+            perc_noise_trial_list.append(perc_noise)
+        perc_noise_game_list.append(perc_noise_trial_list)
+        
+        
+    #load dist values
+    dist_game_list =[]
+    phase = 'stimulus'
+    trials = np.arange(0,16,1)
+    games  = np.arange(1,17,1)
+    game_success = []
+    for game_nr in games:
+        counter_success = 0 # counter to track if velocity values are returned empty
+        dist_trial_list = []
+        data = read_data(partic_id, game_nr,phase)
+        for trial_nr in trials:
+            dist_x,dist_y = dist_gaze(data,trial_nr)
+            
+            # mean velocity
+            if dist_x.size!=0:
+                counter_success +=1
+                dist_mean_x = np.mean(dist_x)
+                dist_mean_y = np.mean(dist_y)
+                #append to trial list
+                dist_trial_list.append([dist_mean_x,dist_mean_y])
+                dist_game_list.append(np.array(dist_trial_list))
+                
+        if counter_success!=0:
+            game_success.append(game_nr)
+            #print(game_nr)
+    dist_game_list = np.array(dist_game_list)    
+    ## Plots
+    
+    # define figure and axes
+    if fig is None:
+        fig = plt.figure()
+        ax  = fig.add_subplot()
+    
+    #speed vs noise (speed = v_x**2 + v_y**2)
+    for i,game_nr in enumerate(game_success):
+
+        #calculate speed
+        if mode == 'mean':
+            dist_x_game_mean, dist_y_game_mean = (dist_game_list[i].mean(0))[0],\
+                                            (dist_game_list[i].mean(0))[1]
+        if mode == 'std':    
+            dist_x_game_mean, dist_y_game_mean = (dist_game_list[i].std(0))[0],\
+                                            (dist_game_list[i].std(0))[1]
+
+        speed = dist_x_game_mean**2 + dist_y_game_mean**2
+        
+        # calculate average noise
+        perc_noise_mean = np.array(perc_noise_game_list[i]).mean()
+        if speed.size!=0:
+            ax.scatter(perc_noise_mean,speed)
+
+
+    #labels and titles
+    ax.set_xlabel('perceptual noise (mean per trial)')
+    ax.set_ylabel('Speed (pixels/unit time step)')
+    ax.set_title('Speed vs perceptual noise | Participant: ' + str(subject_id))
+    fig_title = 'speed_vs_perc_noise_participant_' + str(partic_id) 
+    #plt.savefig(fig_title)
+    
+    return fig,ax
