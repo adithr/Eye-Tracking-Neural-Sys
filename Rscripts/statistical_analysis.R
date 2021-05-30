@@ -71,7 +71,12 @@ dataOriginal<-read.csv("dataset_0423.csv", header = TRUE)
 data<-read.csv("results_data_subjects_V2.csv", header = TRUE)
 
 # Descriptives to test assumptions:
+#hypothesis 1:radius in the heatmap during stimulation phase
 stat.desc(data$delta_radius_stimulation, basic = FALSE, norm = TRUE) # Using the 'delta' column 
+#hypothesis 2:
+
+#hypothesis 3:
+
 
 # Perform paired-samples t-test to see whether high noise perception or low noise perception leads to differences in the test variables:
 #hypothesis 1: radius in the heatmap during stimulation phase
@@ -86,28 +91,31 @@ dep.t.test
 # The dependent t-test is the simplest linear model:
 # It's a model with ONLY an intercept!
 # That is, it simply tests whether the INTERCEPT (i.e. the mean difference) is different from zero.
-#Hypothesis 1: radius in the heatmap during stimulation phase
+#hypothesis 1: radius in the heatmap during stimulation phase
 dep.t.test.lm <- lm(data$delta_radius_stimulation ~ 1)
 summary(dep.t.test.lm)
 confint(dep.t.test.lm)
-#Hypothesis 2:
+#hypothesis 2:
 
-#Hypothesis 3:
+#hypothesis 3:
 
 
 # Pearson r is a good measure of effect size for dependent t-test:
-#Hypothesis 1: radius in the heatmap during stimulation phase
+#hypothesis 1: radius in the heatmap during stimulation phase
 #not really useful in data with non-significant results, I guess.
 t <- dep.t.test$statistic[[1]]
 df <- dep.t.test$parameter[[1]]
 r <- sqrt(t^2/(t^2+df))
 round(r, 3)
-#Hypothesis 2:
+#hypothesis 2:
 
-#Hypothesis 3:
+#hypothesis 3:
 
 
 # A robust method for performing dependent t-test:
-#Hypothesis 1: radius in the heatmap during stimulation phase
+#hypothesis 1: radius in the heatmap during stimulation phase
 dep.t.test.yuen <- yuend(data$radius_high_stimulation, data$radius_low_stimulation)
 dep.t.test.yuen
+#hypothesis 2:
+
+#hypothesis 3:
