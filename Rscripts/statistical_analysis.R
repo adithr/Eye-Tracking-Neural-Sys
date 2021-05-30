@@ -79,7 +79,7 @@ hist <- ggplot(data, aes(delta_radius_stimulation))
 hist +
   theme(legend.position = "none") +
   geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
-  labs(x = "delta_radius_stimulation", y = "Density") +
+  labs(x = expression(Delta*" radius"), y = "Density") +
   theme_grey(base_size = 24) + 
   # add normal curve:
   stat_function(fun = dnorm, args = list(mean = mean(data$delta_radius_stimulation, na.rm = TRUE), sd = sd(data$delta_radius_stimulation, na.rm = TRUE)), colour = "black", size = 1)
@@ -126,10 +126,19 @@ dataVelocity <-data.frame(noise, velocity)
 boxplot <- ggplot(dataVelocity, aes(noise, velocity))
 boxplot + geom_boxplot(outlier.shape=NA) + labs(x = "noise", y ="velocity")+
   scale_y_continuous(limits = c(0,0.0025))
+#outlier.shape=NA, to not show new outliers
 
+boxplot(dataVelocity)$out
+ggbetweenstats(dataVelocity, noise, velocity, outlier.tagging = TRUE) 
 
-boxplot(dataVelocity, outline=F)$out
-ggbetweenstats(dataVelocity, noise, velocity, outlier.tagging = TRUE, outline=F)
+#hypothesis 3
+
+noise <- gl(2, 35, labels = c("high", "low"))
+inattention <- c(data$inattention_high, data$inattention_low)
+dataInattention <-data.frame(noise, inattention)
+
+boxplot <- ggplot(dataInattention, aes(noise, inattention))
+boxplot + geom_boxplot() + labs(x = "noise", y ="inattention")
 
 ##############################
 # REPEATED MEASURES ERROR BARS 
@@ -156,8 +165,8 @@ bar2 +
   theme_grey(base_size = 14) + # get nice theme going
   stat_summary(fun = mean, geom = "bar", fill = "White", colour = "Black", width = 0.5) + # add the bar
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2) + # add the error bars
-  labs(x = "High noise - Low noise games", y = expression(Delta*" radius_stimulation")) + # label the axes (with greek capital Delta)
-  ggtitle("bar plot with correct error bars") + # add a plot title, maybe don't add "with correct error bars" part
+  labs(x = "High noise - Low noise games", y = expression(Delta*" radius")) + # label the axes (with greek capital Delta)
+  ggtitle("bar plot") + # add a plot title, maybe don't add "with correct error bars" part
   theme(plot.title = element_text(hjust = 0.5, face = "italic")) + # center and italicize plot title
   scale_x_discrete(labels = "")  # remove bar label, does not really have a meaning when you have only 1 boxplot
 
@@ -179,51 +188,66 @@ data<-read.csv("results_data_subjects_V2.csv", header = TRUE)
 stat.desc(data$delta_radius_stimulation, basic = FALSE, norm = TRUE) # Using the 'delta' column 
 #hypothesis 2:
 stat.desc(data$delta_velocity, basic = FALSE, norm = TRUE) # Using the 'delta' column 
+stat.desc(data_withoutOut$delta_velocity, basic = FALSE, norm = TRUE) # Using the 'delta' column 
 #hypothesis 3:
-
+stat.desc(data$delta_inattention, basic = FALSE, norm = TRUE)
 
 # Perform paired-samples t-test to see whether high noise perception or low noise perception leads to differences in the test variables:
 #hypothesis 1: radius in the heatmap during stimulation phase
-dep.t.test <- t.test(data$radius_high_stimulation,data$radius_low_stimulation, paired = TRUE)
-dep.t.test
+dep.t.test1 <- t.test(data$radius_high_stimulation,data$radius_low_stimulation, paired = TRUE)
+dep.t.test1
 #hypothesis 2:
-dep.t.test <- t.test(data$velocity_low,data$velocity_high, paired = TRUE)
-dep.t.test
+dep.t.test2 <- t.test(data$velocity_low,data$velocity_high, paired = TRUE)
+dep.t.test2
 #without outliers:
-dep.t.test <- t.test(data_withoutOut$velocity_low, data_withoutOut$velocity_high, paired = TRUE)
-dep.t.test
+dep.t.test2 <- t.test(data_withoutOut$velocity_low, data_withoutOut$velocity_high, paired = TRUE)
+dep.t.test2
 #hypothesis 3:
-
+dep.t.test3 <- t.test(data$inattention_low,data$inattention_high, paired = TRUE)
+dep.t.test3
 
 
 # The dependent t-test is the simplest linear model:
 # It's a model with ONLY an intercept!
 # That is, it simply tests whether the INTERCEPT (i.e. the mean difference) is different from zero.
 #hypothesis 1: radius in the heatmap during stimulation phase
-dep.t.test.lm <- lm(data$delta_radius_stimulation ~ 1)
-summary(dep.t.test.lm)
-confint(dep.t.test.lm)
+dep.t.test.lm1 <- lm(data$delta_radius_stimulation ~ 1)
+summary(dep.t.test.lm1)
+confint(dep.t.test.lm1)
 #hypothesis 2:
-
+dep.t.test.lm2 <- lm(data_withoutOut$delta_velocity ~ 1)
+summary(dep.t.test.lm2)
+confint(dep.t.test.lm2)
 #hypothesis 3:
-
+dep.t.test.lm3 <- lm(data$delta_inattention ~ 1)
+summary(dep.t.test.lm3)
+confint(dep.t.test.lm3)
 
 # Pearson r is a good measure of effect size for dependent t-test:
 #hypothesis 1: radius in the heatmap during stimulation phase
 #not really useful in data with non-significant results, I guess.
+t <- dep.t.test1$statistic[[1]]
+df <- dep.t.test1$parameter[[1]]
+r <- sqrt(t^2/(t^2+df))
+round(r, 3)
+#hypothesis 2:
+t <- dep.t.test2$statistic[[1]]
+df <- dep.t.test2$parameter[[1]]
+r <- sqrt(t^2/(t^2+df))
+round(r, 3)
+#hypothesis 3:
 t <- dep.t.test$statistic[[1]]
 df <- dep.t.test$parameter[[1]]
 r <- sqrt(t^2/(t^2+df))
 round(r, 3)
-#hypothesis 2:
-
-#hypothesis 3:
-
 
 # A robust method for performing dependent t-test:
 #hypothesis 1: radius in the heatmap during stimulation phase
-dep.t.test.yuen <- yuend(data$radius_high_stimulation, data$radius_low_stimulation)
-dep.t.test.yuen
+dep.t.test.yuen1 <- yuend(data$radius_high_stimulation, data$radius_low_stimulation)
+dep.t.test.yuen1
 #hypothesis 2:
-
+dep.t.test.yuen2 <- yuend(data_withoutOut$velocity_low, data_withoutOut$velocity_high)
+dep.t.test.yuen2
 #hypothesis 3:
+dep.t.test.yuen3 <- yuend(data$inattention_low, data$inattention_high)
+dep.t.test.yuen3
