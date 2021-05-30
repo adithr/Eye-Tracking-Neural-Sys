@@ -18,8 +18,14 @@ import csv
 import cv2
 
 
+def return_partic_id(subject_id):
+    if subject_id < 10:
+        partic_id = 'G00' + str(subject_id)
+    else:
+        partic_id = 'G0' + str(subject_id)
+    return partic_id
 
-def read_data(partic_id,game_nr,phase='stimulus'):
+def read_data(partic_id,game_nr,phase='stimulus',path='Participant Data/'):
 
     """
     Reads data from the asc file for different phases namely fixation, stimulus, reward
@@ -33,7 +39,7 @@ def read_data(partic_id,game_nr,phase='stimulus'):
     Returns:
 	   data : dict containing all the data (refer to pygazeanalyser github)	
     """
-    fname = 'Participant Data/'+str(partic_id)+ '/' + str(partic_id) + \
+    fname =  path + str(partic_id) + \
              str('_') + str(game_nr) + str('.asc') #path of the ASC file
 
     if phase =='stimulus':
@@ -100,6 +106,14 @@ def load_dataset_properties(fname):
             row = row[0].split(',') #split by comma separated 
             data_set.append(row)
     return data_set
+
+def return_property_value_mean(data_set,subject_id,game_nr,property_label):
+    trials = np.arange(1,17,1)
+    prop_val_arr = return_property_value(data_set,subject_id,game_nr,\
+                                         trials,property_label)
+    prop_val_mean = np.mean(prop_val_arr)
+    return prop_val_mean
+
 
 def return_property_value(data_set,subject_id, game_nr,trial_nr,property_label):
 
@@ -366,6 +380,13 @@ def velocity_gaze(data,trial_nr):
         vel_y = np.array([])
     return vel_x, vel_y
 
+def velocity_mean(data):
+    velocity_gaze_vec = np.vectorize(velocity_gaze, excluded = ['data'])
+    trials = np.arange(0,16,1)
+    vel_x_arr, vel_y_arr = velocity_gaze_vec(data,trials)      
+    vel_x_mean, vel_y_mean = vel_x_arr.mean(), vel_y_arr.mean()
+    return vel_x_mean, vel_y_mean
+    
 
 ## speed vs Noise plot function
 def plot_speed_noise(partic_id, dataset_fname = 'dataset_0423.csv',mode='mean',fig=None,ax=None):
