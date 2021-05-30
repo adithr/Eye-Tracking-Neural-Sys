@@ -79,7 +79,7 @@ hist <- ggplot(data, aes(delta_radius_stimulation))
 hist +
   theme(legend.position = "none") +
   geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
-  labs(x = expression(Delta*" radius"), y = "Density") +
+  labs(x = expression(Delta*" Radius"), y = "Density") +
   theme_grey(base_size = 24) + 
   # add normal curve:
   stat_function(fun = dnorm, args = list(mean = mean(data$delta_radius_stimulation, na.rm = TRUE), sd = sd(data$delta_radius_stimulation, na.rm = TRUE)), colour = "black", size = 1)
@@ -131,6 +131,26 @@ boxplot + geom_boxplot(outlier.shape=NA) + labs(x = "noise", y ="velocity")+
 boxplot(dataVelocity)$out
 ggbetweenstats(dataVelocity, noise, velocity, outlier.tagging = TRUE) 
 
+hist <- ggplot(data, aes(delta_velocity)) 
+hist +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
+  labs(x = expression(Delta*" Velocity"), y = "Density") +
+  theme_grey(base_size = 24) + 
+  # add normal curve:
+  stat_function(fun = dnorm, args = list(mean = mean(data$delta_velocity, na.rm = TRUE), sd = sd(data$delta_velocity, na.rm = TRUE)), colour = "black", size = 1)
+
+#without outliers
+hist <- ggplot(data_withoutOut, aes(delta_velocity)) 
+hist +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
+  labs(x = expression(Delta*" Velocity"), y = "Density") +
+  theme_grey(base_size = 24) + 
+  # add normal curve:
+  stat_function(fun = dnorm, args = list(mean = mean(data_withoutOut$delta_velocity, na.rm = TRUE), sd = sd(data_withoutOut$delta_velocity, na.rm = TRUE)), colour = "black", size = 1)
+
+
 #hypothesis 3
 
 noise <- gl(2, 35, labels = c("high", "low"))
@@ -139,6 +159,17 @@ dataInattention <-data.frame(noise, inattention)
 
 boxplot <- ggplot(dataInattention, aes(noise, inattention))
 boxplot + geom_boxplot() + labs(x = "noise", y ="inattention")
+
+hist <- ggplot(data, aes(delta_inattention)) 
+hist +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
+  labs(x = expression(Delta*" Inattention"), y = "Density") +
+  theme_grey(base_size = 24) + 
+  # add normal curve:
+  stat_function(fun = dnorm, args = list(mean = mean(data$delta_inattention, na.rm = TRUE), sd = sd(data$delta_inattention, na.rm = TRUE)), colour = "black", size = 1)
+
+
 
 ##############################
 # REPEATED MEASURES ERROR BARS 
