@@ -27,7 +27,9 @@ data$velocity_low <- sapply(data$velocity_low, as.numeric)
 data$velocity_high <- sapply(data$velocity_high, as.numeric)
 data$delta_velocity <- sapply(data$delta_velocity, as.numeric)
 
-#subsetOriginal <- dataOriginal[c(8065:10080),]
+data$inattention_low <- sapply(data$inattention_low, as.numeric)
+data$inattention_high <- sapply(data$inattention_high, as.numeric)
+data$delta_inattention <- sapply(data$delta_inattention, as.numeric)
 
 ###########
 # PLOTS
@@ -71,6 +73,17 @@ names(dataRadius) <- c("noise","radius")
 
 boxplot <- ggplot(dataRadius, aes(noise, radius))
 boxplot + geom_boxplot() + labs(x = "noise", y ="radius")
+
+#histogramm
+hist <- ggplot(data, aes(delta_radius_stimulation)) 
+hist +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white", bins = 30, na.rm = TRUE) +
+  labs(x = "delta_radius_stimulation", y = "Density") +
+  theme_grey(base_size = 24) + 
+  # add normal curve:
+  stat_function(fun = dnorm, args = list(mean = mean(data$delta_radius_stimulation, na.rm = TRUE), sd = sd(data$delta_radius_stimulation, na.rm = TRUE)), colour = "black", size = 1)
+
 
 #hypothesis 2: velocity vs noise
 noise <- gl(2, 35, labels = c("high", "low"))
