@@ -124,8 +124,10 @@ velocity <- c(velocity_high_withoutOut$velocity_high, velocity_low_withoutOut$ve
 dataVelocity <-data.frame(noise, velocity)
 
 boxplot <- ggplot(dataVelocity, aes(noise, velocity))
-boxplot + geom_boxplot(outlier.shape=NA) + labs(x = "noise", y ="velocity")+
+boxplot + geom_boxplot() + labs(x = "noise", y ="velocity")+
   scale_y_continuous(limits = c(0,0.0025))
+#boxplot + geom_boxplot(outlier.shape=NA) + labs(x = "noise", y ="velocity")+
+#  scale_y_continuous(limits = c(0,0.0025))
 #outlier.shape=NA, to not show new outliers
 
 boxplot(dataVelocity)$out
